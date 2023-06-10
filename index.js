@@ -87,6 +87,11 @@ async function run() {
             res.send(result);
         })
 
+        app.post('/courses', async (req, res) => {
+            const newItem = req.body;
+            const result = await Courses.insertOne(newItem)
+            res.send(result)
+        })
 
         app.get('/users/admin/:email', async (req, res) => {
             const email = req.params.email;
