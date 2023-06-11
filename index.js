@@ -57,6 +57,17 @@ async function run() {
             res.send(result);
         })
 
+
+        app.get('/Course', async (req, res) => {
+            console.log(req.query.email);
+            let query = {};
+            if (req.query?.email) {
+                query = { email: req.query.email }
+            }
+            const result = await Courses.find(query).toArray();
+            res.send(result);
+        })
+
         app.get('/users', async (req, res) => {
             const result = await userCollection.find().toArray();
             res.send(result)
@@ -122,6 +133,30 @@ async function run() {
             }
 
             const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+        app.patch('/courses/approve/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    status: 'approved'
+                }
+            }
+
+            const result = await Courses.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+        app.patch('/courses/deny/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    status: 'denied'
+                }
+            }
+
+            const result = await Courses.updateOne(filter, updateDoc);
             res.send(result);
         })
 
