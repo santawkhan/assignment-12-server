@@ -35,6 +35,7 @@ async function run() {
 
         const Courses = client.db("courses").collection("coursesCollection");
         const userCollection = client.db("courses").collection("users");
+        const selectedCollection = client.db("courses").collection("selectedClass")
 
 
 
@@ -101,6 +102,12 @@ async function run() {
         app.post('/courses', async (req, res) => {
             const newItem = req.body;
             const result = await Courses.insertOne(newItem)
+            res.send(result)
+        })
+
+        app.post('/selectedClass', async (req, res) => {
+            const Item = req.body;
+            const result = await Courses.insertOne(Item)
             res.send(result)
         })
 
