@@ -107,8 +107,18 @@ async function run() {
 
         app.post('/selectedClass', async (req, res) => {
             const Item = req.body;
-            const result = await Courses.insertOne(Item)
+            const result = await selectedCollection.insertOne(Item)
             res.send(result)
+        })
+
+        app.get('/mySelectedClass', async (req, res) => {
+            console.log(req.query.email);
+            let query = {};
+            if (req.query?.email) {
+                query = { email: req.query.email }
+            }
+            const result = await selectedCollection.find(query).toArray();
+            res.send(result);
         })
 
         app.get('/users/admin/:email', async (req, res) => {
