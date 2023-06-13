@@ -52,7 +52,7 @@ async function run() {
             const query = {};
             const options = {
                 // sort matched documents in descending order by rating
-                sort: { "Available_seats": -1 },
+                sort: { "seats": -1 },
 
             };
             const cursor = Courses.find(query, options)
@@ -92,6 +92,7 @@ async function run() {
         app.post('/create-payment-intent', async (req, res) => {
             const { price } = req.body;
             const amount = price * 100;
+            console.log(price, amount)
             const paymentIntent = await stripe.paymentIntents.create({
                 amount: amount,
                 currency: "usd",
@@ -129,6 +130,12 @@ async function run() {
             const result = await selectedCollection.insertOne(Item)
             res.send(result)
         })
+        app.delete('/carts/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await selectedCollection.deleteOne(query);
+            res.send(result);
+        })
 
         app.get('/mySelectedClass', async (req, res) => {
             console.log(req.query.email);
@@ -137,6 +144,15 @@ async function run() {
                 query = { email: req.query.email }
             }
             const result = await selectedCollection.find(query).toArray();
+            res.send(result);
+        })
+        app.get('/enrolled', async (req, res) => {
+            console.log(req.query.email);
+            let query = {};
+            if (req.query?.email) {
+                query = { email: req.query.email }
+            }
+            const result = await paymentCollection.find(query).toArray();
             res.send(result);
         })
 
@@ -183,6 +199,30 @@ async function run() {
             const result = await Courses.updateOne(filter, updateDoc);
             res.send(result);
         })
+        app.patch('/courses/seats/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    $inc: { seats: -1 }
+                }
+            }
+
+            const result = await Courses.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+
+        // app.patch('/courses/:courseId/book', async(req, res) => {
+        //     const courseId = req.params.id;
+        //   const query = {seats:seats}
+        //   const data =await Courses.findOne(query)
+        //     // Check if the course is available
+        //     if (data > 0) {
+        //       // Decrease the number of available seats
+        //        const result=data--;
+
+
+        //     }})          
         app.patch('/courses/deny/:id', async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
@@ -201,8 +241,19 @@ async function run() {
 
         app.post('/payments', async (req, res) => {
             const payment = req.body;
-            const result = await paymentCollection.insertOne(payment);
-            res.send(result);
+            const insertResult = await paymentCollection.insertOne(payment);
+
+            const query = { _id: { $in: payment.cartItems.map(id => new ObjectId(id)) } }
+            const deleteResult = await selectedCollection.deleteOne(query)
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    $inc: { seats: -1 }
+                }
+            }
+            const result = await Courses.updateOne(filter, updateDoc);
+            res.send({ insertResult, deleteResult, result });
         })
 
 
