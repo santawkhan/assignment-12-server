@@ -208,7 +208,8 @@ async function run() {
                 }
             }
 
-
+            const result = await Courses.updateOne(filter, updateDoc);
+            res.send(result);
         })
 
         // app.patch('/courses/:courseId/book', async(req, res) => {
