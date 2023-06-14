@@ -137,126 +137,133 @@ async function run() {
             res.send(result);
         })
 
-
-    })
-    app.get('/enrolled', async (req, res) => {
-        console.log(req.query.email);
-        let query = {};
-        if (req.query?.email) {
-            query = { email: req.query.email }
-        }
-        const result = await paymentCollection.find(query).toArray();
-        res.send(result);
-    })
-
-    app.get('/users/admin/:email', async (req, res) => {
-        const email = req.params.email;
-
-        const query = { email: email }
-        const user = await userCollection.findOne(query);
-        const result = { admin: user?.role === 'admin' }
-        res.send(result);
-
-    })
-    app.get('/users/instructor/:email', async (req, res) => {
-        const email = req.params.email;
-
-        const query = { email: email }
-        const user = await userCollection.findOne(query);
-        const result = { instructor: user?.role === 'instructor' }
-        res.send(result);
-
-    })
-
-    app.patch('/users/instructor/:id', async (req, res) => {
-        const id = req.params.id;
-        const filter = { _id: new ObjectId(id) };
-        const updateDoc = {
-            $set: {
-                role: 'instructor'
+        app.get('/mySelectedClass', async (req, res) => {
+            console.log(req.query.email);
+            let query = {};
+            if (req.query?.email) {
+                query = { email: req.query.email }
             }
-        }
-
-        const result = await userCollection.updateOne(filter, updateDoc);
-        res.send(result);
-    })
-    app.patch('/courses/approve/:id', async (req, res) => {
-        const id = req.params.id;
-        const filter = { _id: new ObjectId(id) };
-        const updateDoc = {
-            $set: {
-                status: 'approved'
+            const result = await selectedCollection.find(query).toArray();
+            res.send(result);
+        })
+        app.get('/enrolled', async (req, res) => {
+            console.log(req.query.email);
+            let query = {};
+            if (req.query?.email) {
+                query = { email: req.query.email }
             }
-        }
+            const result = await paymentCollection.find(query).toArray();
+            res.send(result);
+        })
 
-        const result = await Courses.updateOne(filter, updateDoc);
-        res.send(result);
-    })
-    app.patch('/courses/seats/:id', async (req, res) => {
-        const id = req.params.id;
-        const filter = { _id: new ObjectId(id) };
-        const updateDoc = {
-            $set: {
-                $inc: { seats: -1 }
+        app.get('/users/admin/:email', async (req, res) => {
+            const email = req.params.email;
+
+            const query = { email: email }
+            const user = await userCollection.findOne(query);
+            const result = { admin: user?.role === 'admin' }
+            res.send(result);
+
+        })
+        app.get('/users/instructor/:email', async (req, res) => {
+            const email = req.params.email;
+
+            const query = { email: email }
+            const user = await userCollection.findOne(query);
+            const result = { instructor: user?.role === 'instructor' }
+            res.send(result);
+
+        })
+
+        app.patch('/users/instructor/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    role: 'instructor'
+                }
             }
-        }
 
-        const result = await Courses.updateOne(filter, updateDoc);
-        res.send(result);
-    })
-
-    // app.patch('/courses/:courseId/book', async(req, res) => {
-    //     const courseId = req.params.id;
-    //   const query = {seats:seats}
-    //   const data =await Courses.findOne(query)
-    //     // Check if the course is available
-    //     if (data > 0) {
-    //       // Decrease the number of available seats
-    //        const result=data--;
-
-
-    //     }})          
-    app.patch('/courses/deny/:id', async (req, res) => {
-        const id = req.params.id;
-        const filter = { _id: new ObjectId(id) };
-        const updateDoc = {
-            $set: {
-                status: 'denied'
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+        app.patch('/courses/approve/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    status: 'approved'
+                }
             }
-        }
 
-        const result = await Courses.updateOne(filter, updateDoc);
-        res.send(result);
-    })
-
-
-
-
-    app.post('/payments', async (req, res) => {
-        const payment = req.body;
-        const insertResult = await paymentCollection.insertOne(payment);
-
-        const query = { _id: { $in: payment.cartItems.map(id => new ObjectId(id)) } }
-        const deleteResult = await selectedCollection.deleteOne(query)
-        const id = req.params.id;
-        const filter = { _id: new ObjectId(id) };
-        const updateDoc = {
-            $set: {
-                $inc: { seats: -1 }
+            const result = await Courses.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+        app.patch('/courses/seats/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    $inc: { seats: -1 }
+                }
             }
-        }
-        const result = await Courses.updateOne(filter, updateDoc);
-        res.send({ insertResult, deleteResult, result });
-    })
+
+            const result = await Courses.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+
+        // app.patch('/courses/:courseId/book', async(req, res) => {
+        //     const courseId = req.params.id;
+        //   const query = {seats:seats}
+        //   const data =await Courses.findOne(query)
+        //     // Check if the course is available
+        //     if (data > 0) {
+        //       // Decrease the number of available seats
+        //        const result=data--;
 
 
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-} finally {
-    // Ensures that the client will close when you finish/error
+        //     }})          
+        app.patch('/courses/deny/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    status: 'denied'
+                }
+            }
 
-}
+            const result = await Courses.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+
+
+
+
+        app.post('/payments', async (req, res) => {
+            const payment = req.body;
+            const insertResult = await paymentCollection.insertOne(payment);
+
+            const query = { _id: { $in: payment.cartItems.map(id => new ObjectId(id)) } }
+            const deleteResult = await selectedCollection.deleteOne(query)
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    $inc: { seats: -1 }
+                }
+            }
+            const result = await Courses.updateOne(filter, updateDoc);
+            res.send({ insertResult, deleteResult, result });
+        })
+
+
+        // Send a ping to confirm a successful connection
+        await client.db("admin").command({ ping: 1 });
+        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    } finally {
+        // Ensures that the client will close when you finish/error
+
+    }
 }
 run().catch(console.dir);
 
